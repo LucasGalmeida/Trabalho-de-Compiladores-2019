@@ -1,0 +1,325 @@
+"""
+
+    Gramatica:
+
+    A               -> PROG $
+    PROG            -> programa id pvirg DECLS C-COMP
+    DECLS           -> lambda | variaveis LIST-DECLS
+    LIST-DECLS      -> DECL-TIPO D
+    D               -> lambda | LIST-DECLS
+    DECL-TIPO       -> LIST-ID dpontos TIPO pvirg
+    LIST-ID         -> id E
+    E               -> lambda | virg LIST-ID
+    TIPO            -> inteiro | real | logico | caracter
+    C-COMP          -> abrech LISTA-COMANDOS fechach
+    LISTA-COMANDOS  -> COMANDOS G
+    G               -> lambda | LISTA-COMANDOS
+    COMANDOS        -> IF | WHILE | READ | WRITE | ATRIB
+    IF              -> se abrepar EXPR fechapar C-COMP H
+    H               -> lambda | senao C-COMP
+    WHILE           -> enquanto abrepar EXPR fechapar C-COMP
+    READ            -> leia abrepar LIST-ID fechapar pvirg
+    ATRIB           -> id atrib EXPR pvirg
+    WRITE           -> escreva abrepar LIST-W fechapar pvirg
+    LIST-W          -> ELEM-W L
+    L               -> lambda | virg LIST-W
+    ELEM-W          -> EXPR | cadeia
+    EXPR            -> SIMPLES P
+    P               -> lambda | oprel SIMPLES
+    SIMPLES         -> TERMO R
+    R               -> lambda | opad SIMPLES
+    TERMO           -> FAT S
+    S               -> lambda | opmul TERMO
+    FAT             -> id | cte | abrepar EXPR fechapar | verdadeiro | falso | opneg FAT
+
+    Tokens:
+    ID CTE CADEIA ATRIB OPREL OPAD OPMUL OPNEG PVIRG DPONTOS VIRG ABREPAR FECHARPAR ABRECH FECHACH FIMARQ ERROR
+    PROGRAMA VARIAVEIS INTEIRO REAL LOGICO CARACTER SE SENAO ENQUANTO LEIA ESCREVA FALSO VERDADEIRO
+
+    Comentarios:
+
+    Iniciam com // e vao ate o fim da linha
+    ou
+    Iniciam com /* e vao ate */
+
+"""
+
+# Biblioteca usada para pegar o caminho dos arquivos .txt
+from os import path
+
+
+# Classe que define os tokens
+# Sao definidos por uma tupla, contendo um identificador (numero) e uma string (o token)
+class TipoToken:
+    # Tokens "Normais"
+    ID = (1, 'identificador')
+    CTE = (2, 'numero')
+    CADEIA = (3, 'cadeia')
+    ATRIB = (4, 'atribucao')
+    OPREL = (5, 'relacional')
+    OPAD = (6, 'maisoumenos')
+    OPMUL = (7, 'multoudiv')
+    OPNEG = (8, '!')
+    PVIRG = (9, ';')
+    DPONTOS = (10, ':')
+    VIRG = (11, ',')
+    ABREPAR = (12, '(')
+    FECHARPAR = (13, ')')
+    ABRECH = (14, '{')
+    FECHACH = (15, '}')
+    FIMARQ = (16, 'fim-de-arquivo')
+    ERROR = (17, 'erro')
+
+    # Tokens das palavras reservadas
+    PROGRAMA = (18, 'programa')
+    VARIAVEIS = (19, 'variaveis')
+    INTEIRO = (20, 'inteiro')
+    REAL = (21, 'real')
+    LOGICO = (22, 'logico')
+    CARACTER = (23, 'caracter')
+    SE = (24, 'se')
+    SENAO = (25, 'senao')
+    ENQUANTO = (26, 'enquanto')
+    LEIA = (27, 'leia')
+    ESCREVA = (28, 'escreva')
+    FALSO = (29, 'falso')
+    VERDADEIRO = (30, 'verdadeiro')
+
+
+# Classe que define as caracteristicas do token
+# É definido pelo seu tipo (TipoToken), seu lexema (o que foi lido) e a linha em que foi lido
+class Token:
+    def __init__(self, tipo, lexema, linha):
+        self.tipo = tipo
+        (const, msg) = tipo
+        self.const = const
+        self.msg = msg
+        self.lexema = lexema
+        self.linha = linha
+
+
+# Parte principal do analisador lexico
+class Lexico:
+    # Estrutura do tipo dicionario, que relaciona uma string (lida no arquivo) com um token
+    reservadas = {'programa': TipoToken.PROGRAMA, 'variaveis': TipoToken.VARIAVEIS, 'inteiro': TipoToken.INTEIRO,
+                  'real': TipoToken.REAL, 'logico': TipoToken.LOGICO, 'caracter': TipoToken.CARACTER,
+                  'se': TipoToken.SE, 'senao': TipoToken.SENAO, 'enquanto': TipoToken.ENQUANTO, 'leia': TipoToken.LEIA,
+                  'escreva': TipoToken.ESCREVA, 'falso': TipoToken.FALSO, 'verdadeiro': TipoToken.VERDADEIRO}
+
+    # Funcao que recebe o nome do arquivo
+    def __init__(self, nomeArquivo):
+        self.nomeArquivo = nomeArquivo
+        self.arquivo = None
+        # os atributos buffer e linha sao incluidos no metodo abreArquivo
+
+    # Funcao que abre o arquivo
+    def abreArquivo(self):
+        if not self.arquivo is None:  # Verifica se o arquivo esta aberto
+            print('ERRO: Arquivo ja aberto')
+            quit()
+        elif path.exists(self.nomeArquivo):  # Verifica se e um caminho valido, se for abre
+            self.arquivo = open(self.nomeArquivo, "r")  # Abre no modo de leitura
+            # fila de caracteres 'deslidos' pelo ungetChar
+            self.buffer = ''  # Acho que limpa o buffer para iniciar a leitura
+            self.linha = 1  # Contador de linhas, iniciando em 1
+        else:  # Caso algum erro ocorra
+            print('ERRO: Arquivo "%s" inexistente.' % self.nomeArquivo)
+            quit()
+
+    # Funcao que fecha o arquivo
+    def fechaArquivo(self):
+        if self.arquivo is None:
+            print('ERRO: Nao ha arquivo aberto')
+            quit()
+        else:
+            self.arquivo.close()
+
+    # Funcao responsavel por ler o arquivo, caracter por caracter
+    def getChar(self):
+        if self.arquivo is None:  # Verifica se o arquivo esta aberto
+            print('ERRO: Nao ha arquivo aberto')
+            quit()
+        elif len(self.buffer) > 0:  # ??
+            c = self.buffer[0]
+            self.buffer = self.buffer[1:]
+            return c
+        else:  # Le um caracter do arquivo
+            c = self.arquivo.read(1)
+            # se nao foi eof, pelo menos um car foi lido
+            # senao len(c) == 0
+            if len(c) == 0:
+                return None
+            else:
+                return c.lower()  # Retorna o caracter lido em letra minuscula, pois a linguagem P nao e case sensitive
+
+    def ungetChar(self, c):  # ??
+        if not c is None:
+            self.buffer = self.buffer + c
+
+    # Funcao que fica lendo caracteres ate eles formarem um token
+    def getToken(self):
+        lexema = ''  # String que armazena o nome do token lido
+        estado = 1  # Estado inicial que le um caracter
+        car = None  # Variavel que armazena o caracter lido
+
+        #  Laco infinito que le ate for fim de arquivo
+        while True:
+            if estado == 1:  # estado inicial que faz primeira classificacao
+
+                car = self.getChar()  # Le um caracter
+
+                if car is None:  # Se nao tiver lido nada, foi fim de arquivo
+                    return Token(TipoToken.FIMARQ, '<eof', self.linha)  # Retorna o token fim de arquivo
+                elif car in {' ', '\t', '\n'}:  # Se tiver lido um espaco em branco nao faz nada, a nao ser que seja \n
+                    if car == '\n':  # Se for \n, conta mais uma linha
+                        self.linha = self.linha + 1
+                elif car.isalpha():  # Se o caracter lido for uma letra
+                    estado = 2
+                elif car.isdigit():  # Se o caracter lido for um numero
+                    estado = 3
+                elif car in {'=', '<', '>', ',', ':', ';', '+', '-', '*', '(', ')', '{',
+                             '}'}:  # Se o caracter lido for especial
+                    estado = 4
+                elif car == '/':  # Se o caracter lido for uma barra (comentario ou divisao)
+                    estado = 5
+                elif car == '"':  # Se o caractere lido for aspas duplas (string)
+                    estado = 6
+                else:  # Se leu algo invalido
+                    return Token(TipoToken.ERROR, '<' + car + '>', self.linha)  # Retorna token do tipo erro
+
+            elif estado == 2:  # estado que trata nomes (identificadores ou palavras reservadas)
+
+                lexema = lexema + car  # String que armazena os caracteres lidos
+
+                car = self.getChar()  # Le o proximo caractere
+                if car is None or (not car.isalnum()):  # Se algo nao foi lido ou o caractere lido nao for um numero
+
+                    # terminou o nome
+                    self.ungetChar(car)  # ??
+                    if lexema in Lexico.reservadas:  # Verifica se o lexema lido e uma palavra reservada
+                        return Token(Lexico.reservadas[lexema], lexema,
+                                     self.linha)  # Se for retorna o token da palavra reservada
+
+                    # Verifica se o identificador lido possui caracteres invalidos
+                    elif 'ç' in lexema or lexema[0].isalnum():
+                        return Token(TipoToken.ERROR, 'caracter(es) invalido(s)', self.linha)
+
+                    else:  # Se tudo deu certo, retorna um token do tipo identificador
+                        return Token(TipoToken.ID, lexema, self.linha)
+
+            elif estado == 3:  # estado que trata numeros
+
+                lexema = lexema + car  # String que armazena os caracteres lidos
+                car = self.getChar()  # Le o proximo caractere
+
+                # Se terminou de ler ou o caractere nao for um numero e for diferente de um ponto (REAL)
+                if car is None or (not car.isdigit() and car != '.'):
+                    # terminou o numero
+                    self.ungetChar(car)
+                    return Token(TipoToken.CTE, lexema, self.linha)  # Retorna token do tipo numero
+
+            elif estado == 4:  # estado que trata outros tokens primitivos comuns
+
+                lexema = lexema + car  # String que armazena os caracteres lidos
+
+                #  Se o caracter lido for dois pontos, e preciso tratar se é um token do
+                #  tipo atribuicao ou dois pontos
+                if car == ':':
+                    car2 = self.getChar()  # "Ve no futuro" qual sera o proximo token a vir
+                    # self.ungetChar(car)
+                    # Se for um igual, é atribuição, se nao, é dois pontos
+                    if car2 != '=':
+                        return Token(TipoToken.DPONTOS, lexema, self.linha)
+                    else:
+                        return Token(TipoToken.ATRIB, lexema, self.linha)
+
+                elif car in {'=', '<', '>'}:  # Se for um caracter de comparacao
+                    return Token(TipoToken.OPREL, lexema, self.linha)  # Retorna token do tipo relacional
+
+                elif car in {'+', '-'}:  # Se for um caracter de soma ou subtracao
+                    return Token(TipoToken.OPAD, lexema, self.linha)  # Retorna um token do tipo operacao adicao
+
+                elif car == '*':  # Se for um caractere de multiplicao
+                    return Token(TipoToken.OPMUL, lexema, self.linha)  # Retorna um token do tipo operacao multiplicacao
+
+                elif car == '!':  # se for um ponto de exclamacao
+                    return Token(TipoToken.OPNEG, lexema, self.linha)  # Retorna um token do tipo negacao
+
+                elif car == ',':  # Se for uma virgula
+                    return Token(TipoToken.VIRG, lexema, self.linha)  # Retorna um token do tipo virgula
+
+                elif car == ';':  # Se for um caractere ponto e virgula
+                    return Token(TipoToken.PVIRG, lexema, self.linha)  # Retorna um token do tipo ponto e virgula
+
+                elif car == '(':  # Se for um caractere do tipo abre parentes
+                    return Token(TipoToken.ABREPAR, lexema, self.linha)  # Retorna um token do tipo abre parenteses
+
+                elif car == ')':  # Se for um caractere do tipo fecha parentes
+                    return Token(TipoToken.FECHARPAR, lexema, self.linha)  # Retorna um token do tipo fecha parenteses
+
+                elif car == '{':  # Se for um caractere do tipo abre parentes
+                    return Token(TipoToken.ABRECH, lexema, self.linha)  # Retorna um token do tipo abre chaves
+
+                elif car == '}':  # Se for um caractere do tipo abre parentes
+                    return Token(TipoToken.FECHACH, lexema, self.linha)  # Retorna um token do tipo fecha chaves
+
+            elif estado == 5:  # Estado que trata comentarios
+
+                car2 = self.getChar()  # "Ve no futuro" qual sera o proximo token a vir
+                # self.ungetChar(car)
+                if car2 != '/' and car2 != '*':  # Se nao for um comentario
+                    return Token(TipoToken.OPMUL, lexema, self.linha)  # Retorna token de operacao de multiplicacao
+                elif car2 == '/':  # Se for comentario em linha
+                    # consumindo comentario
+                    while (not car is None) and (car != '\n'):  # Le os caracters e nao faz nada ate o fim da linha
+                        car = self.getChar()
+                    self.linha = self.linha + 1  # Atualiza a linha atual
+                    estado = 1  # Retorna ao estado de iniciar a leitura
+                elif car2 == '*':  # Se for comentario em bloco
+                    # consumindo comentario
+                    while (not car is None) and (car != '*'):
+                        car = self.getChar()
+                        if car is None:
+                            # Se nunca foi fechado, retorna erro
+                            return Token(TipoToken.ERROR, "comentario nao fechado", self.linha)
+                        if car == '*':  # Verifica se o bloco de comentario foi fechado
+                            car = self.getChar()
+                            if car == '/':
+                                estado = 1
+
+            elif estado == 6:  # Estado que trata strings
+
+                if car == '"':
+
+                    lexema = lexema + '"'  # String que armazena os caracteres lidos
+                    car = self.getChar()  # Le o proximo caracter
+                    lexema = lexema + car  # Armazena na string
+                    while (not car is None) and (car != '"'):  # Le a string ate ela ser fechada
+                        car = self.getChar()
+                        lexema = lexema + car
+
+                    estado = 1
+
+                return Token(TipoToken.CADEIA, lexema, self.linha)  # Retorna o token do tipo string
+
+
+if __name__ == "__main__":
+
+    # nome = input("Digite o nome do arquivo e sua extensão")
+    nome = "exemplo4.txt"
+    lex = Lexico(nome)
+    lex.abreArquivo()
+
+    while True:
+        token = lex.getToken()
+        print("token= %s , lexema= (%s), linha= %d\n" % (token.msg, token.lexema, token.linha))
+        if token.const == TipoToken.FIMARQ[0]:
+            break
+    lex.fechaArquivo()
+
+""" ANOTACOES
+
+ERROS
+    VARIAVEIS NAO PODEM COMEÇAR COM NUMEROS
+
+"""
