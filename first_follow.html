@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head><title>First and Follow Table GTK</title><meta charset="utf-8"></head>
+<body style="background-color:#DEE0DE;">
+<h1 align="center">
+<font color = '#080808' size = '7' face = 'Times New Roman'>GTK - Grammar Tool Kit 0.8</font><br> <font size = '6' color = '#494A49'> First And Follow Sets </font>
+</h1>
+<center><table style="width:50%" border="3">
+<tr>
+<th BGCOLOR = #858785> <font size = '4' color = '##030303'> Variable </font></th>
+<th BGCOLOR = #858785><font size = '4' color = '#030303'> First Set </font></th>
+<th BGCOLOR = #858785><font size = '4' color = '#030303'> Follow Set </font></th>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltINICIAL&gt</td><td BGCOLOR = #F9F8F8>programa			</td>
+<td BGCOLOR = #F9F8F8>$			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltPROG&gt</td><td BGCOLOR = #F9F8F8>programa			</td>
+<td BGCOLOR = #F9F8F8>a			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltDECLS&gt</td><td BGCOLOR = #F9F8F8>lambda			variaveis			</td>
+<td BGCOLOR = #F9F8F8>abrech			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltLISTDECLS&gt</td><td BGCOLOR = #F9F8F8>id			</td>
+<td BGCOLOR = #F9F8F8>abrech			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltD&gt</td><td BGCOLOR = #F9F8F8>id			lambda			</td>
+<td BGCOLOR = #F9F8F8>abrech			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltDECL-TIPO&gt</td><td BGCOLOR = #F9F8F8>id			</td>
+<td BGCOLOR = #F9F8F8>id			lambda			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltLIST-ID&gt</td><td BGCOLOR = #F9F8F8>id			</td>
+<td BGCOLOR = #F9F8F8>dpontos			fechapar			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltE&gt</td><td BGCOLOR = #F9F8F8>lambda			virg			</td>
+<td BGCOLOR = #F9F8F8>dpontos			fechapar			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltTIPO&gt</td><td BGCOLOR = #F9F8F8>caracter			inteiro			logico			real			</td>
+<td BGCOLOR = #F9F8F8>pvirg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltC-COMP&gt</td><td BGCOLOR = #F9F8F8>abrech			</td>
+<td BGCOLOR = #F9F8F8>a			enquanto			escreva			id			lambda			leia			se			senao			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltLISTA-COMANDOS&gt</td><td BGCOLOR = #F9F8F8>enquanto			escreva			id			leia			se			</td>
+<td BGCOLOR = #F9F8F8>fechach			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltG&gt</td><td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+<td BGCOLOR = #F9F8F8>fechach			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltCOMANDOS&gt</td><td BGCOLOR = #F9F8F8>enquanto			escreva			id			leia			se			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltIF&gt</td><td BGCOLOR = #F9F8F8>se			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltH&gt</td><td BGCOLOR = #F9F8F8>lambda			senao			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltWHILE&gt</td><td BGCOLOR = #F9F8F8>enquanto			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltREAD&gt</td><td BGCOLOR = #F9F8F8>leia			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltATRIB&gt</td><td BGCOLOR = #F9F8F8>id			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltWRITE&gt</td><td BGCOLOR = #F9F8F8>escreva			</td>
+<td BGCOLOR = #F9F8F8>enquanto			escreva			id			lambda			leia			se			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltLIST-W&gt</td><td BGCOLOR = #F9F8F8>abrepar			cadeia			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>fechapar			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltL&gt</td><td BGCOLOR = #F9F8F8>lambda			virg			</td>
+<td BGCOLOR = #F9F8F8>fechapar			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltELEM-W&gt</td><td BGCOLOR = #F9F8F8>abrepar			cadeia			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>lambda			virg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltEXPR&gt</td><td BGCOLOR = #F9F8F8>abrepar			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>fechapar			lambda			pvirg			virg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltP&gt</td><td BGCOLOR = #F9F8F8>lambda			oprel			</td>
+<td BGCOLOR = #F9F8F8>fechapar			lambda			pvirg			virg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltSIMPLES&gt</td><td BGCOLOR = #F9F8F8>abrepar			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>fechapar			lambda			oprel			pvirg			virg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltR&gt</td><td BGCOLOR = #F9F8F8>lambda			opad			</td>
+<td BGCOLOR = #F9F8F8>fechapar			lambda			oprel			pvirg			virg			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltTERMO&gt</td><td BGCOLOR = #F9F8F8>abrepar			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>lambda			opad			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltS&gt</td><td BGCOLOR = #F9F8F8>lambda			opmul			</td>
+<td BGCOLOR = #F9F8F8>lambda			opad			</td>
+</tr>
+<tr>
+<td BGCOLOR = #D8D8D8>&ltFAT&gt</td><td BGCOLOR = #F9F8F8>abrepar			cte			falso			id			opneg			verdadeiro			</td>
+<td BGCOLOR = #F9F8F8>lambda			opmul			</td>
+</tr>
+</table>
+</center><footer  text-align: "center" >
+<p align = "center"><font size = '2' face="verdana" color = '#080808'> IFMG - Instituto Federal de Educação e Tecnologia - Campus Formiga </font></p>
+<p align = "center"><font size = '2' face="verdana" color = '#080808'> Trabalho de conclusão de curso </font></p>
+<p align = "center"><font size = '2' face="verdana" color = '#080808'> Autor: Leandro Vagner Arcebispo Ferreira [leandrobispoferreira@gmail.com] </font></p>
+<p align = "center"><font size = '2' face="verdana" color = '#080808'> Orientador: Walace Rodrigues </font></p>
+</footer>
+</body>
+</html>
+</body>
+</html>
