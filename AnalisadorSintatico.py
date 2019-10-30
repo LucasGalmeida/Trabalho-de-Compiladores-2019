@@ -45,7 +45,7 @@
 """
 
 #  Importe o analisador lexico
-from AnalisadorLexico import TipoToken as tt, Lexico
+from AnalisadorLexico import TipoToken as tt, Token, Lexico
 
 
 # Classe principal do analisador sintatico
@@ -80,7 +80,7 @@ class Sintatico:
             print('ERRO DE SINTAXE [linha %d]: era esperado "%s" mas foi recebido "%s"'
                   % (self.tokenAtual.linha, msg, self.tokenAtual.lexema))
 
-            #self.tokenAtual = self.lex.getToken()
+            # self.tokenAtual = self.lex.getToken()
             quit()
 
     def A(self):  # Nao terminal Inicial
@@ -117,168 +117,318 @@ class Sintatico:
         self.TIPO()  # Depois chama o nao terminal responsavel pelo tipo da variavel
         self.consome(tt.PVIRG)  # Depois consome o terminal ponto e virgula
 
-    def LIST_ID(self):
-        self.consome(tt.ID)
-        self.E()
+    def LIST_ID(self):  # Nao terminal responsavel por ler um identificador
+        self.consome(tt.ID)  # Consome um identificador
+        self.E()  # Chama o nao terminal para verificar se a mais um ID
 
-    def E(self):
-        if self.atualIgual(tt.VIRG):
-            self.consome(tt.VIRG)
-            self.LIST_ID()
-        else:
+    def E(self):  # Nao terminal responsavel por verificar se os ID acabaram, ou se mais um foi declarado
+        if self.atualIgual(tt.VIRG):  # Se leu uma virgula, significa que ha mais uma declaracao
+            self.consome(tt.VIRG)  # Consome o terminal virgula
+            self.LIST_ID()  # Chama o nao terminal para ler mais um ID
+        else:  # Se nao ler uma virgula, os ID acabaram.
             pass
 
-    def TIPO(self):
-        if self.atualIgual(tt.INTEIRO):
-            self.consome(tt.INTEIRO)
-        elif self.atualIgual(tt.REAL):
-            self.consome(tt.REAL)
-        elif self.atualIgual(tt.LOGICO):
-            self.consome(tt.LOGICO)
-        elif self.atualIgual(tt.CARACTER):
-            self.consome(tt.CARACTER)
+    def TIPO(self):  # Nao terminal responsalvel por verificar a declaracao da variavel
+        if self.atualIgual(tt.INTEIRO):  # Se a variavel for do tipo inteiro
+            self.consome(tt.INTEIRO)  # Consome o terminal inteiro
+        elif self.atualIgual(tt.REAL):  # Se a variavel for do tipo real
+            self.consome(tt.REAL)  # Consome o terminal real
+        elif self.atualIgual(tt.LOGICO):  # Se a variavel for do tipo logico
+            self.consome(tt.LOGICO)  # Consome o terminal logico
+        elif self.atualIgual(tt.CARACTER):  # Se a variavel for do tipo caracter
+            self.consome(tt.CARACTER)  # Consome o terminal caracter
 
-    def C_COMP(self):
-        self.consome(tt.ABRECH)
-        self.LISTA_COMANDOS()
-        self.consome(tt.FECHACH)
+    def C_COMP(self):  # Nao terminal que verifica a estrutura dos comandos
+        self.consome(tt.ABRECH)  # Consome o terminal abre chaves
+        self.LISTA_COMANDOS()  # Chama o nao terminal para verificar os comandos declarados
+        self.consome(tt.FECHACH)  # Consome o terminal fecha chaves
 
-    def LISTA_COMANDOS(self):
-        self.COMANDOS()
-        self.G()
+    def LISTA_COMANDOS(self):  # Nao terminal que verifica se um comando foi declarado
+        self.COMANDOS()  # Nao terminal que verifica a estrutura do comando declarado
+        self.G()  # Nao terminal que verifica se mais um comando foi declarado
 
-    def G(self):
-
+    def G(self):  # Nao terminal que verifica se mais algum comando foi declarado
         if self.atualIgual(tt.SE) or self.atualIgual(tt.ENQUANTO) or self.atualIgual(tt.LEIA) or self.atualIgual(
-                tt.ESCREVA) or self.atualIgual(tt.ID):
-            self.LISTA_COMANDOS()
-        else:
+                tt.ESCREVA) or self.atualIgual(tt.ID):  # Se um comando foi declarado
+            self.LISTA_COMANDOS()  # Chama o nao terminal para verificar qual comando foi declarado
+        else:  # Se nenhum tiver sido declarado
             pass
 
-    def COMANDOS(self):
-        if self.atualIgual(tt.SE):
-            self.IF()
-        elif self.atualIgual(tt.ENQUANTO):
-            self.WHILE()
-        elif self.atualIgual(tt.LEIA):
-            self.READ()
-        elif self.atualIgual(tt.ESCREVA):
-            self.WRITE()
-        elif self.atualIgual(tt.ID):
-            self.ATRIB()
+    def COMANDOS(self):  # Nao terminal que verifica qual comando foi declarado
+        if self.atualIgual(tt.SE):  # Se foi declarado um comando do tipo SE
+            self.IF()  # Chama o nao terminal responsavel pela estrutura do tipo IF
+        elif self.atualIgual(tt.ENQUANTO):  # Se foi declarado um comando do tipo ENQUANTO
+            self.WHILE()  # Chama o nao terminal responsavel pela estrutura do tipo WHILE
+        elif self.atualIgual(tt.LEIA):  # Se foi declarado um comando do tipo LEIA
+            self.READ()  # Chama o nao terminal responsavel pela estrutura do tipo READ
+        elif self.atualIgual(tt.ESCREVA):  # Se foi declarado um comando do tipo ESCREVA
+            self.WRITE()  # Chama o nao terminal responsavel pela estrutura do tipo WRITE
+        elif self.atualIgual(tt.ID):  # Se foi declarado um comando do tipo ID
+            self.ATRIB()  # Chama o nao terminal responsavel pela estrutura do tipo ATRIB
 
-    def IF(self):
-        self.consome(tt.SE)
-        self.consome(tt.ABREPAR)
-        self.EXPR()
-        self.consome(tt.FECHARPAR)
-        self.C_COMP()
-        self.H()
+    def IF(self):  # Nao terminal responsavel pela estrutura do tipo SE
+        self.consome(tt.SE)  # Consome o token SE
+        self.consome(tt.ABREPAR)  # Consome o token abre parenteses
+        self.EXPR()  # Chama o nao terminal responsavel pela declaracao da expressao
+        self.consome(tt.FECHARPAR)  # Consome o token fecha parenteses
+        self.C_COMP()  # Chama o nao terminal responsavel pela estrutura do comando
+        self.H()  # Chama o nao terminal que verifica se a estrutura condicional possui o SENAO
 
-    def H(self):
-        if self.atualIgual(tt.SENAO):
-            self.consome(tt.SENAO)
-            self.C_COMP()
-        else:
+    def H(self):  # Nao terminal que verifica se o SENAO foi declarado
+        if self.atualIgual(tt.SENAO):  # Se o token atual for SENAO
+            self.consome(tt.SENAO)  # Consome o terminal SENAO
+            self.C_COMP()  # Chama o nao terminal responsavel pela declaracao dos comandos
+        else:  # Nao houve o SENAO
             pass
 
-    def WHILE(self):
-        self.consome(tt.ENQUANTO)
-        self.consome(tt.ABREPAR)
-        self.EXPR()
-        self.consome(tt.FECHARPAR)
-        self.C_COMP()
+    def WHILE(self):  # Nao terminal responsavel pela declaracao ENQUANTO
+        self.consome(tt.ENQUANTO)  # Consome o terminal ENQUANTO
+        self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
+        self.EXPR()  # Chama o nao terminal para ler a expressao
+        self.consome(tt.FECHARPAR)  # Consome o terminal fecha parenteses
+        self.C_COMP()  # Chama o nao terminal responsavel pela declaracao dos comandos
 
-    def READ(self):
-        self.consome(tt.LEIA)
-        self.consome(tt.ABREPAR)
-        self.LIST_ID()
-        self.consome(tt.FECHARPAR)
-        self.consome(tt.PVIRG)
+    def READ(self):  # Nao terminal responsavel pela declaracao LEIA
+        self.consome(tt.LEIA)  # Consome o terminal LEIA
+        self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
+        self.LIST_ID()  # Chama o nao terminal responsavel por ler um identificador
+        self.consome(tt.FECHARPAR)  # Chama o terminal fechha parenteses
+        self.consome(tt.PVIRG)  # Chama o terminal ponto e virgula
 
-    def ATRIB(self):
-        self.consome(tt.ID)
-        self.consome(tt.ATRIB)
-        self.EXPR()
-        self.consome(tt.PVIRG)
+    def ATRIB(self):  # Nao terminal responsavel pela atribuicao
+        self.consome(tt.ID)  # Consome o terminal identificador
+        self.consome(tt.ATRIB)  # Consome o terminal de atribuicao
+        self.EXPR()  # Chama o nao terminal responsavel por ler a expressao
+        self.consome(tt.PVIRG)  # Consome o terminal ponto e virgula
 
-    def WRITE(self):
-        self.consome(tt.ESCREVA)
-        self.consome(tt.ABREPAR)
-        self.LIST_W()
-        self.consome(tt.FECHARPAR)
-        self.consome(tt.PVIRG)
+    def WRITE(self):  # Nao terminal responsavel pela declaracao ESCRITA
+        self.consome(tt.ESCREVA)  # Consome o terminal ESCREVA
+        self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
+        self.LIST_W()  # Chama o nao terminal responsavel por escrever a string
+        self.consome(tt.FECHARPAR)  # Consome o terminal fecha parenteses
+        self.consome(tt.PVIRG)  # Consome o terminal ponto e virgula
 
-    def LIST_W(self):
-        self.ELEM_W()
-        self.L()
+    def LIST_W(self):  # Nao terminal responsavel pela estrutura da escrita
+        self.ELEM_W()  # Chama o nao terminal responsavel por escrever a cadeia de caracteres
+        self.L()  # Chama o nao terminal que verifica se mais alguma cadeia necessita ser escrita
 
-    def L(self):
-        if self.atualIgual(tt.VIRG):
-            self.consome(tt.VIRG)
-            self.LIST_W()
-        else:
+    def L(self):  # Nao terminal que verifica se mais alguma cadeia necessita ser escrita
+        if self.atualIgual(tt.VIRG):  # Se ler uma virgula, ha mais uma cadeia a ser escrita
+            self.consome(tt.VIRG)  # Consome o terminal virgula
+            self.LIST_W()  # Chama o nao terminal para escrever outra string
+        else:  # Se acabou
             pass
 
-    def ELEM_W(self):
-        if self.atualIgual(tt.CADEIA):
-            self.consome(tt.CADEIA)
-        else:
-            self.EXPR()
+    def ELEM_W(self):  # Nao terminal que verifica o que sera escrito
+        if self.atualIgual(tt.CADEIA):  # Se for o token cadeia
+            self.consome(tt.CADEIA)  # Consome o terminal cadeia
+        else:  # Se for uma expressao
+            self.EXPR()  # Chama o nao terminal responsavel pela expressao
 
-    def EXPR(self):
-        self.SIMPLES()
-        self.P()
+    def EXPR(self):  # Nao terminal que le uma serie de numeros e operacoes
+        self.SIMPLES()  # Chama o nao terminal que le uma serie de numeros e operacoes
+        self.P()  # Chama o nao terminal que verifica se houve uma declaracao do tipo relacional
 
-    def P(self):
-        if self.atualIgual(tt.OPREL):
-            self.consome(tt.OPREL)
-            self.SIMPLES()
-        else:
+    def P(self):  # Nao terminal que verifica se houve uma declaracao do tipo relacional
+        if self.atualIgual(tt.OPREL):  # Se o token  atual for do tipo OPREL
+            self.consome(tt.OPREL)  # Consome o terminal OPREL
+            self.SIMPLES()  # Chama o nao terminal para ler mais numeros/operacoes
+        else:  # Se nao, acabou
             pass
 
-    def SIMPLES(self):
-        self.TERMO()
-        self.R()
+    def SIMPLES(self):  # Nao terminal que le uma serie de numeros e operacoes
+        self.TERMO()  # Chama o nao terminal que le  uma serie de numeros e operacoes
+        self.R()  # Chama o nao terminal que verifica se a mais numeros/operacoes
 
-    def R(self):
-        if self.atualIgual(tt.OPAD):
-            self.consome(tt.OPAD)
-            self.SIMPLES()
-        else:
+    def R(self):  # Nao terminal que verifica se houve uma declaracao de adicao/subtracao
+        if self.atualIgual(tt.OPAD):  # Se houve
+            self.consome(tt.OPAD)  # Consome o terminal OPAD
+            self.SIMPLES()  # Chama o nao terminal para ler a declaracao de outra expressao
+        else:  # Se nao houve, acabou
             pass
 
-    def TERMO(self):
-        self.FAT()
-        self.S()
+    def TERMO(self):  # Nao terminal que le uma serie de numeros e operacoes
+        self.FAT()  # Chama o nao terminal para ler os numeros e operacoes
+        self.S()  # Chama o nao terminal para verificar se houve uma declaracao do tipo multiplicacao/divisao
 
-    def S(self):
-        if self.atualIgual(tt.OPMUL):
-            self.consome(tt.OPMUL)
-            self.TERMO()
-        else:
+    def S(self):  # Nao terminal que verifica se houve uma declaracao de multiplicacao/divisao
+        if self.atualIgual(tt.OPMUL):  # Se houve
+            self.consome(tt.OPMUL)  # Consome o terminal OPMUL
+            self.TERMO()  # Chama o nao terminal para repetir o processo
+        else:  # Se nao houve, acabou
             pass
 
-    def FAT(self):
-        if self.atualIgual(tt.ID):
-            self.consome(tt.ID)
-        elif self.atualIgual(tt.CTE):
-            self.consome(tt.CTE)
-        elif self.atualIgual(tt.ABREPAR):
-            self.consome(tt.ABREPAR)
-            self.EXPR()
-            self.consome(tt.FECHARPAR)
-        elif self.atualIgual(tt.VERDADEIRO):
-            self.consome(tt.VERDADEIRO)
-        elif self.atualIgual(tt.FALSO):
-            self.consome(tt.FALSO)
-        elif self.atualIgual(tt.OPNEG):
-            self.consome(tt.OPNEG)
-            self.FAT()
+    def FAT(self):  # Nao terminal que le os numeros e operacoes
+        if self.atualIgual(tt.ID):  # Se o token atual for um identificador
+            self.consome(tt.ID)  # Consome o terminal identificador
+        elif self.atualIgual(tt.CTE):  # Se o token atual for um numero
+            self.consome(tt.CTE)  # Consome o terminal de numero
+        elif self.atualIgual(tt.ABREPAR):  # Se o token atual for um abre parenteses
+            self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
+            self.EXPR()  # Chama o nao terminal para ler a expressao
+            self.consome(tt.FECHARPAR)  # Consome o terminal fecha parentes
+        elif self.atualIgual(tt.VERDADEIRO):  # Se o token atual for um bolleano verdadeiro
+            self.consome(tt.VERDADEIRO)  # Consome o terminal verdadeiro
+        elif self.atualIgual(tt.FALSO):  # Se o token atual for um bolleano falso
+            self.consome(tt.FALSO)  # Consome o terminal falso
+        elif self.atualIgual(tt.OPNEG):  # Se o token atual for uma negacao
+            self.consome(tt.OPNEG)  # Consome o terminal negacao
+            self.FAT()  # Chama novamente o nao terminal que le os numeros e operacoes
 
 
 if __name__ == "__main__":
     nome = "exemplo2.txt"
 
-    parser = Sintatico()
-    parser.interprete(nome)
+    parser = Sintatico()  # Cria o sintatico
+    parser.interprete(nome)  # Comeca a ler o arquivo
+
+""" TENTIVA FALHA DE IMPLEMENTAR O MODO PANICO 
+
+            if self.atualIgual(tt.PROGRAMA):
+                self.tokenAtual = tt.FIMARQ
+
+            elif self.atualIgual(tt.VARIAVEIS):
+                while self.tokenAtual != tt.ABRECH:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.ID):
+                while (self.tokenAtual != tt.ABRECH or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.DPONTOS or
+                       self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.LEIA or
+                       self.tokenAtual != tt.SE or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPMUL or self.tokenAtual != tt.OPAD):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.ATRIB):  # Marcado
+                while (self.tokenAtual != tt.ABRECH or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.DPONTOS or
+                       self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.LEIA or
+                       self.tokenAtual != tt.SE or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPMUL or self.tokenAtual != tt.OPAD):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.DPONTOS):  # Marcado
+                pass
+
+            elif self.atualIgual(tt.PVIRG):  # Marcado
+                pass
+
+            elif self.atualIgual(tt.VIRG):
+                while self.tokenAtual != tt.DPONTOS or self.tokenAtual != tt.FECHARPAR:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.CARACTER):
+                while self.tokenAtual != tt.PVIRG:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.INTEIRO):
+                while self.tokenAtual != tt.PVIRG:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.LOGICO):
+                while self.tokenAtual != tt.PVIRG:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.REAL):
+                while self.tokenAtual != tt.PVIRG:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.ABRECH):
+                while (self.tokenAtual != tt.ENQUANTO or self.tokenAtual != tt.ESCREVA or
+                       self.tokenAtual != tt.FIMARQ or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE or
+                       self.tokenAtual != tt.SENAO):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.FECHACH):  # Marcado
+                pass
+
+            elif self.atualIgual(tt.ENQUANTO):
+                while (self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.ESCREVA):
+                while (self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.LEIA):
+                while (self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.SE):
+                while (self.tokenAtual != tt.FECHACH or self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.SENAO):
+                while (self.tokenAtual != tt.ENQUANTO or
+                       self.tokenAtual != tt.ESCREVA or self.tokenAtual != tt.ID or
+                       self.tokenAtual != tt.LEIA or self.tokenAtual != tt.SE):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.ABREPAR):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPAD or self.tokenAtual != tt.OPMUL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.FECHARPAR):  # Marcado
+                pass
+
+            elif self.atualIgual(tt.CADEIA):
+                while self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.CTE):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPAD or self.tokenAtual != tt.OPMUL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.FALSO):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPAD or self.tokenAtual != tt.OPMUL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.OPNEG):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPAD or self.tokenAtual != tt.OPMUL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.VERDADEIRO):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL or
+                       self.tokenAtual != tt.OPAD or self.tokenAtual != tt.OPMUL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.OPREL):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.OPAD):
+                while (self.tokenAtual != tt.FECHARPAR or self.tokenAtual != tt.VIRG or
+                       self.tokenAtual != tt.PVIRG or self.tokenAtual != tt.OPREL):
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.OPMUL):
+                while self.tokenAtual != tt.OPAD:
+                    self.tokenAtual = self.lex.getToken()
+
+            elif self.atualIgual(tt.OPNEG):  # Marcado
+                pass   
+
+"""
