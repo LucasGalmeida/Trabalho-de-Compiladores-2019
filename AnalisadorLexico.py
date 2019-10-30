@@ -201,7 +201,7 @@ class Lexico:
                                      self.linha)  # Se for retorna o token da palavra reservada
 
                     # Verifica se o identificador lido possui caracteres invalidos
-                    elif 'ç' in lexema or lexema[0].isalnum():
+                    elif 'ç' in lexema or lexema[0].isdigit():
                         return Token(TipoToken.ERROR, 'caracter(es) invalido(s)', self.linha)
 
                     else:  # Se tudo deu certo, retorna um token do tipo identificador
@@ -286,6 +286,7 @@ class Lexico:
                             car = self.getChar()
                             if car == '/':
                                 estado = 1
+                                break
 
             elif estado == 6:  # Estado que trata strings
 
@@ -296,7 +297,13 @@ class Lexico:
                     lexema = lexema + car  # Armazena na string
                     while (not car is None) and (car != '"'):  # Le a string ate ela ser fechada
                         car = self.getChar()
+
+                        if car is None:  # Se nao tiver lido nada, foi fim de arquivo
+                            # Retorna o token de erro, pois as aspas nao foram fechadas
+                            return Token(TipoToken.ERROR, "Aspas nao fechadas", self.linha)
+
                         lexema = lexema + car
+
 
                     estado = 1
 
@@ -305,17 +312,18 @@ class Lexico:
 
 if __name__ == "__main__":
 
+    # Variavel nome armazena o nome do arquivo
     # nome = input("Digite o nome do arquivo e sua extensão")
-    nome = "exemplo4.txt"
-    lex = Lexico(nome)
-    lex.abreArquivo()
+    nome = "exemplo1.txt"
+    lex = Lexico(nome)  # Define o nome do arquivo
+    lex.abreArquivo()  # Abre o arquivo
 
-    while True:
-        token = lex.getToken()
+    while True:  #Laço infinito ate ler o fim do arquivo
+        token = lex.getToken()  # Le um token
         print("token= %s , lexema= (%s), linha= %d\n" % (token.msg, token.lexema, token.linha))
-        if token.const == TipoToken.FIMARQ[0]:
+        if token.const == TipoToken.FIMARQ[0]:  # Se for fim de arquivo, sai do laço
             break
-    lex.fechaArquivo()
+    lex.fechaArquivo()  # Fecha o arquivo
 
 """ ANOTACOES
 
