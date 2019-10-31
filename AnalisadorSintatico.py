@@ -46,7 +46,7 @@
 
 #  Importe o analisador lexico
 from AnalisadorLexico import TipoToken as tt, Token, Lexico
-
+import sys
 
 # Classe principal do analisador sintatico
 class Sintatico:
@@ -54,6 +54,13 @@ class Sintatico:
     def __init__(self):
         self.lex = None
         self.tokenAtual = None
+
+        self.reservadas = {'programa': tt.PROGRAMA, 'variaveis': tt.VARIAVEIS, 'inteiro': tt.INTEIRO,
+                          'real': tt.REAL, 'logico': tt.LOGICO, 'caracter': tt.CARACTER,
+                          'se': tt.SE, 'senao': tt.SENAO, 'enquanto': tt.ENQUANTO, 'leia': tt.LEIA,
+                          'escreva': tt.ESCREVA, 'falso': tt.FALSO, 'verdadeiro': tt.VERDADEIRO}
+
+
 
     # Inicia o analisador sintatico
     def interprete(self, nomeArquivo):
@@ -277,9 +284,22 @@ class Sintatico:
 
 
 if __name__ == "__main__":
-    nome = "exemplo2.txt"
+
+    #nome = "exemplo2.txt"
+    nome = sys.argv[1]
 
     parser = Sintatico()  # Cria o sintatico
+
+    tabela_simbolos = None
+
+    if len(sys.argv) > 2:
+
+        if sys.argv[2] == "-t":
+            tabela_simbolos = open(sys.argv[3], "w")
+            # tabela_simbolos.writelines(lex.reservadas)
+            tabela_simbolos.write(str(parser.reservadas))
+
+
     parser.interprete(nome)  # Comeca a ler o arquivo
 
 """ TENTIVA FALHA DE IMPLEMENTAR O MODO PANICO 
