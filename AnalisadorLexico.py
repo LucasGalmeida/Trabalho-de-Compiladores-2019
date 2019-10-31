@@ -47,6 +47,8 @@
 # Biblioteca usada para pegar o caminho dos arquivos .txt
 from os import path
 
+import sys
+
 
 # Classe que define os tokens
 # Sao definidos por uma tupla, contendo um identificador (numero) e uma string (o token)
@@ -204,6 +206,9 @@ class Lexico:
                     elif 'ç' in lexema or lexema[0].isdigit():
                         return Token(TipoToken.ERROR, 'caracter(es) invalido(s)', self.linha)
 
+                    elif len(lexema) > 32:
+                        return Token(TipoToken.ERROR, 'id com mais de 32 caracteres', self.linha)
+
                     else:  # Se tudo deu certo, retorna um token do tipo identificador
                         return Token(TipoToken.ID, lexema, self.linha)
 
@@ -304,7 +309,6 @@ class Lexico:
 
                         lexema = lexema + car
 
-
                     estado = 1
 
                 return Token(TipoToken.CADEIA, lexema, self.linha)  # Retorna o token do tipo string
@@ -314,11 +318,23 @@ if __name__ == "__main__":
 
     # Variavel nome armazena o nome do arquivo
     # nome = input("Digite o nome do arquivo e sua extensão")
-    nome = "exemplo1.txt"
+    # nome = "exemplo1.txt"
+    nome = sys.argv[1]
+
     lex = Lexico(nome)  # Define o nome do arquivo
     lex.abreArquivo()  # Abre o arquivo
 
-    while True:  #Laço infinito ate ler o fim do arquivo
+    tabela_simbolos = None
+
+    if len(sys.argv) > 2:
+
+        if sys.argv[2] == "-t":
+            print("Teste")
+            tabela_simbolos = open(sys.argv[3], "w")
+            #tabela_simbolos.writelines(lex.reservadas)
+            tabela_simbolos.write(str(lex.reservadas))
+
+    while True:  # Laço infinito ate ler o fim do arquivo
         token = lex.getToken()  # Le um token
         print("token= %s , lexema= (%s), linha= %d\n" % (token.msg, token.lexema, token.linha))
         if token.const == TipoToken.FIMARQ[0]:  # Se for fim de arquivo, sai do laço
@@ -327,7 +343,16 @@ if __name__ == "__main__":
 
 """ ANOTACOES
 
-ERROS
-    VARIAVEIS NAO PODEM COMEÇAR COM NUMEROS
+    TESTAR SE O TOKEN DE ATRIBUICAO ESTA SENDO LIDO CORRETAMENTE
 
+
+nome = 
+
+    tabela_simbolos = None
+
+    if  == "-t":
+        print("Teste")
+        tabela_simbolos = open(, "w")
+        
+    tabela_simbolos.writelines(lex.reservadas)
 """
