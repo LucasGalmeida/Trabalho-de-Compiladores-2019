@@ -48,6 +48,7 @@
 from AnalisadorLexico import TipoToken as tt, Token, Lexico
 import sys
 
+
 # Classe principal do analisador sintatico
 class Sintatico:
 
@@ -55,12 +56,10 @@ class Sintatico:
         self.lex = None
         self.tokenAtual = None
 
-        self.reservadas = {'programa': tt.PROGRAMA, 'variaveis': tt.VARIAVEIS, 'inteiro': tt.INTEIRO,
-                          'real': tt.REAL, 'logico': tt.LOGICO, 'caracter': tt.CARACTER,
-                          'se': tt.SE, 'senao': tt.SENAO, 'enquanto': tt.ENQUANTO, 'leia': tt.LEIA,
-                          'escreva': tt.ESCREVA, 'falso': tt.FALSO, 'verdadeiro': tt.VERDADEIRO}
-
-
+        self.tabela = {'programa': tt.PROGRAMA, 'variaveis': tt.VARIAVEIS, 'inteiro': tt.INTEIRO,
+                       'real': tt.REAL, 'logico': tt.LOGICO, 'caracter': tt.CARACTER,
+                       'se': tt.SE, 'senao': tt.SENAO, 'enquanto': tt.ENQUANTO, 'leia': tt.LEIA,
+                       'escreva': tt.ESCREVA, 'falso': tt.FALSO, 'verdadeiro': tt.VERDADEIRO}
 
     # Inicia o analisador sintatico
     def interprete(self, nomeArquivo):
@@ -80,62 +79,135 @@ class Sintatico:
         return self.tokenAtual.const == const
 
     def consome(self, token):  # Consome o token atual, e chama o proximo
-        if self.atualIgual(token):  # Verifica se o token foi o esperado
+
+        if self.atualIgual(tt.ERROR):
+            (const, msg) = token
+            print('ERRO DE SINTAXE [linha %d]: foi recebido "%s"'
+                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
+
+        elif self.atualIgual(token):  # Verifica se o token foi o esperado
             self.tokenAtual = self.lex.getToken()
+
+        """
         else:  # Se o token nao for o esperado
             (const, msg) = token
             print('ERRO DE SINTAXE [linha %d]: era esperado "%s" mas foi recebido "%s"'
-                  % (self.tokenAtual.linha, msg, self.tokenAtual.lexema))
-
-            # self.tokenAtual = self.lex.getToken()
-            quit()
+                  % (self.tokenAtual.linha, msg, self.tokenAtual.lexema))"""
 
     def A(self):  # Nao terminal Inicial
         self.PROG()  # Chama o "Main"
         self.consome(tt.FIMARQ)  # Consome o fim de arquivo
 
     def PROG(self):  # Nao terminal "Main"
+
         self.consome(tt.PROGRAMA)  # Consome o terminal programa
         self.consome(tt.ID)  # Consome o terminal que indica o "nome" do programa
         self.consome(tt.PVIRG)  # Consome o terminal ponto e virgula
-        self.DECLS()  # Chama as declaracoes
+
+        if self.atualIgual(tt.ERROR):
+            while self.tokenAtual.const != 14 and self.tokenAtual.const != 16:
+                self.tokenAtual = self.lex.getToken()
+            self.DECLS()  # Chama as declaracoes
+        else:
+            self.DECLS()  # Chama as declaracoes
+
         self.C_COMP()  # Chama a funcao que abre chaves, chama os comandos e fecha chaves
 
     def DECLS(self):  # Nao terminal das declaracoes
-        if self.atualIgual(tt.VARIAVEIS):  # Se houver alguma variavel nova
-            self.consome(tt.VARIAVEIS)  # Consome o terminal variaveis
-            self.LIST_DECLS()  # Chama o nao terminal responsavel pela estrutura das variaveis
-        else:  # Se nao houver mais nenhuma variavel
-            pass
+
+        if self.atualIgual(tt.ERROR):
+            while self.tokenAtual.const != 14 and self.tokenAtual.const != 16:
+                self.tokenAtual = self.lex.getToken()
+            if self.atualIgual(tt.VARIAVEIS):  # Se houver alguma variavel nova
+                self.consome(tt.VARIAVEIS)  # Consome o terminal variaveis
+                self.LIST_DECLS()  # Chama o nao terminal responsavel pela estrutura das variaveis
+            else:  # Se nao houver mais nenhuma variavel
+                pass
+        else:
+            if self.atualIgual(tt.VARIAVEIS):  # Se houver alguma variavel nova
+                self.consome(tt.VARIAVEIS)  # Consome o terminal variaveis
+                self.LIST_DECLS()  # Chama o nao terminal responsavel pela estrutura das variaveis
+            else:  # Se nao houver mais nenhuma variavel
+                pass
 
     def LIST_DECLS(self):  # Nao terminal responsavel pela estrutura das variaveis
-        self.DECL_TIPO()  # Chama o nao terminal responsavel pela estrutura das variaveis
-        self.D()  # Chama o nao terminal que verifica se ha mais outra variavel
+
+        if self.atualIgual(tt.ERROR):
+
+            (const, msg) = tt.ERROR
+            print('ERRO DE SINTAXE [linha %d]: foi recebido "%s"'
+                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
+
+            while (self.tokenAtual.const != 14 and self.tokenAtual.const != 16 and self.tokenAtual.const != 10
+                   and self.tokenAtual.const != 1 and self.tokenAtual.const != 11):
+                self.tokenAtual = self.lex.getToken()
+            self.DECL_TIPO()  # Chama o nao terminal responsavel pela estrutura das variaveis
+        else:
+            self.DECL_TIPO()  # Chama o nao terminal responsavel pela estrutura das variaveis
+
+        if self.atualIgual(tt.ERROR):
+            (const, msg) = tt.ERROR
+            print('ERRO DE SINTAXE [linha %d]: foi recebido "%s"'
+                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
+            while (self.tokenAtual.const != 14 and self.tokenAtual.const != 16 and self.tokenAtual.const != 10
+                   and self.tokenAtual.const != 1 and self.tokenAtual.const != 11):
+                self.tokenAtual = self.lex.getToken()
+            self.D()  # Chama o nao terminal que verifica se ha mais outra variavel
+        else:
+            self.D()  # Chama o nao terminal que verifica se ha mais outra variavel
 
     def D(self):  # Terminal que verifica se ha mais outra variavel
+
         if self.atualIgual(tt.ID):  # Se tiver lido um ID, é outra variavel
             self.LIST_DECLS()
         else:  # Se nao, acabou
             pass
 
     def DECL_TIPO(self):  # Nao terminal responsavel pela estrutura das variaveis
+
+        if self.atualIgual(tt.CTE):
+            print('ERRO DE SINTAXE [linha %d]: Variaveis nao podem começar com numeros.'
+                  % self.tokenAtual.linha)
+        elif not(self.atualIgual(tt.ID)):
+            print('ERRO DE SINTAXE [linha %d]: Era esperado um ID após "%s"'
+                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
+
         self.LIST_ID()  # Primeiro chama o nao terminal responsavel por ler um ID
         self.consome(tt.DPONTOS)  # Depois consome o terminal DoisPontos
         self.TIPO()  # Depois chama o nao terminal responsavel pelo tipo da variavel
         self.consome(tt.PVIRG)  # Depois consome o terminal ponto e virgula
 
     def LIST_ID(self):  # Nao terminal responsavel por ler um identificador
+
+        if self.tokenAtual.const != 1:
+            while (self.tokenAtual.const != 10 and self.tokenAtual.const != 16 and
+                   self.tokenAtual.const != 13 and self.tokenAtual.const != 1):
+                self.tokenAtual = self.lex.getToken()
+
         self.consome(tt.ID)  # Consome um identificador
         self.E()  # Chama o nao terminal para verificar se a mais um ID
 
     def E(self):  # Nao terminal responsavel por verificar se os ID acabaram, ou se mais um foi declarado
-        if self.atualIgual(tt.VIRG):  # Se leu uma virgula, significa que ha mais uma declaracao
-            self.consome(tt.VIRG)  # Consome o terminal virgula
-            self.LIST_ID()  # Chama o nao terminal para ler mais um ID
-        else:  # Se nao ler uma virgula, os ID acabaram.
-            pass
+
+        if self.atualIgual(tt.ERROR):
+            while (self.tokenAtual.const != 10 and self.tokenAtual.const != 16 and
+                   self.tokenAtual.const != 13 and self.tokenAtual.const != 1):
+                self.tokenAtual = self.lex.getToken()
+            if self.atualIgual(tt.VIRG):  # Se leu uma virgula, significa que ha mais uma declaracao
+                self.consome(tt.VIRG)  # Consome o terminal virgula
+                self.LIST_ID()  # Chama o nao terminal para ler mais um ID
+            else:  # Se nao ler uma virgula, os ID acabaram.
+                pass
+
+        else:
+            if self.atualIgual(tt.VIRG):  # Se leu uma virgula, significa que ha mais uma declaracao
+                self.consome(tt.VIRG)  # Consome o terminal virgula
+                self.LIST_ID()  # Chama o nao terminal para ler mais um ID
+            else:  # Se nao ler uma virgula, os ID acabaram.
+                pass
 
     def TIPO(self):  # Nao terminal responsalvel por verificar a declaracao da variavel
+
         if self.atualIgual(tt.INTEIRO):  # Se a variavel for do tipo inteiro
             self.consome(tt.INTEIRO)  # Consome o terminal inteiro
         elif self.atualIgual(tt.REAL):  # Se a variavel for do tipo real
@@ -146,22 +218,67 @@ class Sintatico:
             self.consome(tt.CARACTER)  # Consome o terminal caracter
 
     def C_COMP(self):  # Nao terminal que verifica a estrutura dos comandos
-        self.consome(tt.ABRECH)  # Consome o terminal abre chaves
+
+        if self.atualIgual(tt.ERROR):
+
+            (const, msg) = tt.ERROR
+            print('ERRO DE SINTAXE [linha %d]: foi recebido "%s"'
+                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
+
+            while (self.tokenAtual.const != 26 and self.tokenAtual.const != 16 and
+                   self.tokenAtual.const != 28 and self.tokenAtual.const != 1 and
+                   self.tokenAtual.const != 27 and self.tokenAtual.const != 24 and
+                   self.tokenAtual.const != 25):
+                self.tokenAtual = self.lex.getToken()
+        else:
+            self.consome(tt.ABRECH)  # Consome o terminal abre chaves
+
         self.LISTA_COMANDOS()  # Chama o nao terminal para verificar os comandos declarados
-        self.consome(tt.FECHACH)  # Consome o terminal fecha chaves
+
+        if self.atualIgual(tt.ERROR):
+            while (self.tokenAtual.const != 26 and self.tokenAtual.const != 16 and
+                   self.tokenAtual.const != 28 and self.tokenAtual.const != 1 and
+                   self.tokenAtual.const != 27 and self.tokenAtual.const != 24 and
+                   self.tokenAtual.const != 25):
+                self.tokenAtual = self.lex.getToken()
+        else:
+            self.consome(tt.FECHACH)  # Consome o terminal fecha chaves
 
     def LISTA_COMANDOS(self):  # Nao terminal que verifica se um comando foi declarado
-        self.COMANDOS()  # Nao terminal que verifica a estrutura do comando declarado
-        self.G()  # Nao terminal que verifica se mais um comando foi declarado
+
+        if self.atualIgual(tt.ERROR):
+            while (self.tokenAtual.const != 26 and self.tokenAtual.const != 16 and
+                   self.tokenAtual.const != 24 and self.tokenAtual.const != 28 and
+                   self.tokenAtual.const != 1 and self.tokenAtual.const != 27):
+                self.tokenAtual = self.lex.getToken()
+            self.COMANDOS()  # Nao terminal que verifica a estrutura do comando declarado
+        else:
+            self.COMANDOS()  # Nao terminal que verifica a estrutura do comando declarado
+
+        if self.atualIgual(tt.ERROR):
+            while self.tokenAtual.const != 15 and self.tokenAtual.const != 16 and self.tokenAtual.const != 9:
+                self.tokenAtual = self.lex.getToken()
+            self.G()  # Nao terminal que verifica se mais um comando foi declarado
+        else:
+            self.G()  # Nao terminal que verifica se mais um comando foi declarado
 
     def G(self):  # Nao terminal que verifica se mais algum comando foi declarado
+
+        if self.atualIgual(tt.PVIRG):
+            self.tokenAtual = self.lex.getToken()
+
         if self.atualIgual(tt.SE) or self.atualIgual(tt.ENQUANTO) or self.atualIgual(tt.LEIA) or self.atualIgual(
-                tt.ESCREVA) or self.atualIgual(tt.ID):  # Se um comando foi declarado
+                tt.ESCREVA) or self.atualIgual(tt.ID) or self.atualIgual(tt.ERROR):  # Se um comando foi declarado
+
+            if self.atualIgual(tt.ERROR):
+                self.consome(tt.ERROR)
+
             self.LISTA_COMANDOS()  # Chama o nao terminal para verificar qual comando foi declarado
         else:  # Se nenhum tiver sido declarado
             pass
 
     def COMANDOS(self):  # Nao terminal que verifica qual comando foi declarado
+
         if self.atualIgual(tt.SE):  # Se foi declarado um comando do tipo SE
             self.IF()  # Chama o nao terminal responsavel pela estrutura do tipo IF
         elif self.atualIgual(tt.ENQUANTO):  # Se foi declarado um comando do tipo ENQUANTO
@@ -174,6 +291,7 @@ class Sintatico:
             self.ATRIB()  # Chama o nao terminal responsavel pela estrutura do tipo ATRIB
 
     def IF(self):  # Nao terminal responsavel pela estrutura do tipo SE
+
         self.consome(tt.SE)  # Consome o token SE
         self.consome(tt.ABREPAR)  # Consome o token abre parenteses
         self.EXPR()  # Chama o nao terminal responsavel pela declaracao da expressao
@@ -182,6 +300,7 @@ class Sintatico:
         self.H()  # Chama o nao terminal que verifica se a estrutura condicional possui o SENAO
 
     def H(self):  # Nao terminal que verifica se o SENAO foi declarado
+
         if self.atualIgual(tt.SENAO):  # Se o token atual for SENAO
             self.consome(tt.SENAO)  # Consome o terminal SENAO
             self.C_COMP()  # Chama o nao terminal responsavel pela declaracao dos comandos
@@ -189,6 +308,7 @@ class Sintatico:
             pass
 
     def WHILE(self):  # Nao terminal responsavel pela declaracao ENQUANTO
+
         self.consome(tt.ENQUANTO)  # Consome o terminal ENQUANTO
         self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
         self.EXPR()  # Chama o nao terminal para ler a expressao
@@ -196,6 +316,7 @@ class Sintatico:
         self.C_COMP()  # Chama o nao terminal responsavel pela declaracao dos comandos
 
     def READ(self):  # Nao terminal responsavel pela declaracao LEIA
+
         self.consome(tt.LEIA)  # Consome o terminal LEIA
         self.consome(tt.ABREPAR)  # Consome o terminal abre parenteses
         self.LIST_ID()  # Chama o nao terminal responsavel por ler um identificador
@@ -203,6 +324,7 @@ class Sintatico:
         self.consome(tt.PVIRG)  # Chama o terminal ponto e virgula
 
     def ATRIB(self):  # Nao terminal responsavel pela atribuicao
+
         self.consome(tt.ID)  # Consome o terminal identificador
         self.consome(tt.ATRIB)  # Consome o terminal de atribuicao
         self.EXPR()  # Chama o nao terminal responsavel por ler a expressao
@@ -285,8 +407,8 @@ class Sintatico:
 
 if __name__ == "__main__":
 
-    #nome = "exemplo2.txt"
-    nome = sys.argv[1]
+    nome = "exemplo4.txt"
+    # nome = sys.argv[1]
 
     parser = Sintatico()  # Cria o sintatico
 
@@ -297,10 +419,11 @@ if __name__ == "__main__":
         if sys.argv[2] == "-t":
             tabela_simbolos = open(sys.argv[3], "w")
             # tabela_simbolos.writelines(lex.reservadas)
-            tabela_simbolos.write(str(parser.reservadas))
-
+            tabela_simbolos.write(str(parser.tabela))
 
     parser.interprete(nome)  # Comeca a ler o arquivo
+
+    print("----- FIM - DA - ANALISE -----")
 
 """ TENTIVA FALHA DE IMPLEMENTAR O MODO PANICO 
 
@@ -450,5 +573,231 @@ if __name__ == "__main__":
 
             elif self.atualIgual(tt.OPNEG):  # Marcado
                 pass   
+                
+                
+        TENTATIVA FALHA 2
+        
+         if const == 18:
+                self.tokenAtual = tt.FIMARQ
+
+            elif const == 19:
+                while self.tokenAtual.const != 14:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 1:
+                while (self.tokenAtual.const != 14 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 15 or self.tokenAtual.const != 10 or
+                       self.tokenAtual.const != 13 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 27 or
+                       self.tokenAtual.const != 24 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 7 or self.tokenAtual.const != 6):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 4:  # Marcado
+                while (self.tokenAtual.const != 14 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 15 or self.tokenAtual.const != 10 or
+                       self.tokenAtual.const != 13 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 27 or
+                       self.tokenAtual.const != 24 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 7 or self.tokenAtual.const != 6):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 10:  # Marcado
+                while self.tokenAtual.const != 10 or self.tokenAtual.const != 13:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 9:  # Marcado
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 11:
+                while self.tokenAtual.const != 10 or self.tokenAtual.const != 13:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 23:
+                while self.tokenAtual.const != 9:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 20:
+                while self.tokenAtual.const != 9:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 22:
+                while self.tokenAtual.const != 9:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 21:
+                while self.tokenAtual.const != 9:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 14:
+                while (self.tokenAtual.const != 26 or self.tokenAtual.const != 28 or
+                       self.tokenAtual.const != tt.FIMARQ or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24 or
+                       self.tokenAtual.const != 25):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 15:  # Marcado
+                pass
+
+            elif const == 26:
+                while (self.tokenAtual.const != 15 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+
+            elif const == 28:
+                while (self.tokenAtual.const != 15 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 27:
+                while (self.tokenAtual.const != 15 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 24:
+                while (self.tokenAtual.const != 15 or self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 25:
+                while (self.tokenAtual.const != 26 or
+                       self.tokenAtual.const != 28 or self.tokenAtual.const != 1 or
+                       self.tokenAtual.const != 27 or self.tokenAtual.const != 24):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 12:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 6 or self.tokenAtual.const != 7):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 13:  # Marcado
+                pass
+
+            elif const == 3:
+                while self.tokenAtual.const != 13 or self.tokenAtual.const != 11:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 2:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 6 or self.tokenAtual.const != 7):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 29:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 6 or self.tokenAtual.const != 7):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 8:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 6 or self.tokenAtual.const != 7):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 30:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5 or
+                       self.tokenAtual.const != 6 or self.tokenAtual.const != 7):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 5:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 6:
+                while (self.tokenAtual.const != 13 or self.tokenAtual.const != 11 or
+                       self.tokenAtual.const != 9 or self.tokenAtual.const != 5):
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
+
+            elif const == 7:
+                while self.tokenAtual.const != 6:
+                    if self.tokenAtual.const == 16:
+                        print("Fim-de-Arquivo")
+                        quit()
+                    self.tokenAtual = self.lex.getToken()
 
 """
