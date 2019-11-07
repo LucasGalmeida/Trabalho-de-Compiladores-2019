@@ -1,6 +1,32 @@
+##################################################################################################
+### Nome do aplicativo: Analisador Sintatico	##################################################
+##################################################################################################
+##################### Instruçoes para compilação e execução do programa ##########################
+#
+#		1.	Para compilar o arquivo, deve-se usar o compilador de python
+#		2.	Usando o terminal, passe o seguinte comando:
+#		3.	python <codigo.py> <arquivo_de_entrada.txt> -t <nome_arquivo_saida.txt>
+#		4.	Exemplo:  python AnalisadorSintatico.py exemplo2.txt -t saida1.txt
+#		5.	Caso tudo esteja certo, o arquivo sera compilado e a tabela de símbolos gerada
+#
+#
+##################################################################################################
+#####  Ambiente(s) de Desenvolvimento utilizado(s): PyCharm ######################################
+##################################################################################################
+##### Data de inicio da implementação do codigo: 23/10/2019 ######################################
+##### Data de verificação final do codigo: 07/11/2019 ############################################
+##################################################################################################
+##################################################################################################
+##### Nome: Pedro Daniel Camargos Soares 		Matricula: 0020640      ##########################
+##################################################################################################
+##### Nome: Lucas Gabriel de Almeida		 	Matricula: 0035333	##############################
+##################################################################################################
+##################################################################################################
+
 #  Importe o analisador lexico
 from AnalisadorLexico import TipoToken as tt, Token, Lexico
 import sys
+
 
 # Classe principal do analisador sintatico
 class Sintatico:
@@ -13,6 +39,8 @@ class Sintatico:
                        'real': tt.REAL, 'logico': tt.LOGICO, 'caracter': tt.CARACTER,
                        'se': tt.SE, 'senao': tt.SENAO, 'enquanto': tt.ENQUANTO, 'leia': tt.LEIA,
                        'escreva': tt.ESCREVA, 'falso': tt.FALSO, 'verdadeiro': tt.VERDADEIRO}
+
+        self.strIDS = ""
 
     # Inicia o analisador sintatico
     def interprete(self, nomeArquivo):
@@ -45,8 +73,6 @@ class Sintatico:
             print('ERRO DE SINTAXE [linha %d]: foi recebido "%s"'
                   % (self.tokenAtual.linha, self.tokenAtual.lexema))
 
-
-
     def A(self):  # Nao terminal Inicial
         self.PROG()  # Chama o "Main"
         self.consome(tt.FIMARQ)  # Consome o fim de arquivo
@@ -54,6 +80,7 @@ class Sintatico:
     def PROG(self):  # Nao terminal "Main"
 
         self.consome(tt.PROGRAMA)  # Consome o terminal programa
+        self.tabela.__setitem__(self.tokenAtual.lexema, tt.PROGRAMA)
         self.consome(tt.ID)  # Consome o terminal que indica o "nome" do programa
         self.consome(tt.PVIRG)  # Consome o terminal ponto e virgula
 
@@ -121,7 +148,7 @@ class Sintatico:
         if self.atualIgual(tt.CTE):
             print('ERRO DE SINTAXE [linha %d]: Variaveis nao podem começar com numeros.'
                   % self.tokenAtual.linha)
-        elif not(self.atualIgual(tt.ID)):
+        elif not (self.atualIgual(tt.ID)):
             print('ERRO DE SINTAXE [linha %d]: Era esperado um ID após "%s"'
                   % (self.tokenAtual.linha, self.tokenAtual.lexema))
 
@@ -137,6 +164,9 @@ class Sintatico:
                    self.tokenAtual.const != 13 and self.tokenAtual.const != 1):
                 self.tokenAtual = self.lex.getToken()
 
+        if self.atualIgual(tt.ID):
+            self.strIDS = self.strIDS + ' "%s"' % self.tokenAtual.lexema
+
         self.consome(tt.ID)  # Consome um identificador
         self.E()  # Chama o nao terminal para verificar se a mais um ID
 
@@ -146,6 +176,7 @@ class Sintatico:
             while (self.tokenAtual.const != 10 and self.tokenAtual.const != 16 and
                    self.tokenAtual.const != 13 and self.tokenAtual.const != 1):
                 self.tokenAtual = self.lex.getToken()
+
             if self.atualIgual(tt.VIRG):  # Se leu uma virgula, significa que ha mais uma declaracao
                 self.consome(tt.VIRG)  # Consome o terminal virgula
                 self.LIST_ID()  # Chama o nao terminal para ler mais um ID
@@ -162,23 +193,24 @@ class Sintatico:
     def TIPO(self):  # Nao terminal responsalvel por verificar a declaracao da variavel
 
         if self.atualIgual(tt.INTEIRO):  # Se a variavel for do tipo inteiro
+            self.tabela.__setitem__(self.strIDS, tt.INTEIRO)
             self.consome(tt.INTEIRO)  # Consome o terminal inteiro
+
         elif self.atualIgual(tt.REAL):  # Se a variavel for do tipo real
+            self.tabela.__setitem__(self.strIDS, tt.REAL)
             self.consome(tt.REAL)  # Consome o terminal real
+
         elif self.atualIgual(tt.LOGICO):  # Se a variavel for do tipo logico
+            self.tabela.__setitem__(self.strIDS, tt.LOGICO)
             self.consome(tt.LOGICO)  # Consome o terminal logico
+
         elif self.atualIgual(tt.CARACTER):  # Se a variavel for do tipo caracter
+            self.tabela.__setitem__(self.strIDS, tt.CARACTER)
             self.consome(tt.CARACTER)  # Consome o terminal caracter
 
+        self.strIDS = ""
+
     def C_COMP(self):  # Nao terminal que verifica a estrutura dos comandos
-
-        """
-                if self.tokenAtual.const != '14' and self.tokenAtual.lexema != '{' and not self.atualIgual(tt.ERROR):
-            print('ERRO DE SINTAXE [linha %d]: foi recebido "%s" C-COMP'
-                  % (self.tokenAtual.linha, self.tokenAtual.lexema))
-
-        """
-
 
         if self.atualIgual(tt.ERROR):
 
@@ -193,7 +225,6 @@ class Sintatico:
                 self.tokenAtual = self.lex.getToken()
         else:
             self.consome(tt.ABRECH)  # Consome o terminal abre chaves
-
 
         self.LISTA_COMANDOS()  # Chama o nao terminal para verificar os comandos declarados
 
@@ -375,20 +406,16 @@ class Sintatico:
 
 if __name__ == "__main__":
 
-    nome = "exemplo5.txt"
-    # nome = sys.argv[1]
-
+    #nome = "exemplo1.txt"
+    nome = sys.argv[1]
     parser = Sintatico()  # Cria o sintatico
-
     tabela_simbolos = None
-
+    parser.interprete(nome)  # Comeca a ler o arquivo
     if len(sys.argv) > 2:
-
         if sys.argv[2] == "-t":
             tabela_simbolos = open(sys.argv[3], "w")
             # tabela_simbolos.writelines(lex.reservadas)
             tabela_simbolos.write(str(parser.tabela))
-
-    parser.interprete(nome)  # Comeca a ler o arquivo
+            # tabela_simbolos.write(parser.strIDS)
 
     print("----- FIM - DA - ANALISE -----")

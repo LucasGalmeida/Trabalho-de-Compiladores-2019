@@ -1,48 +1,18 @@
-"""
-
-    Gramatica:
-
-    A               -> PROG $
-    PROG            -> programa id pvirg DECLS C-COMP
-    DECLS           -> lambda | variaveis LIST-DECLS
-    LIST-DECLS      -> DECL-TIPO D
-    D               -> lambda | LIST-DECLS
-    DECL-TIPO       -> LIST-ID dpontos TIPO pvirg
-    LIST-ID         -> id E
-    E               -> lambda | virg LIST-ID
-    TIPO            -> inteiro | real | logico | caracter
-    C-COMP          -> abrech LISTA-COMANDOS fechach
-    LISTA-COMANDOS  -> COMANDOS G
-    G               -> lambda | LISTA-COMANDOS
-    COMANDOS        -> IF | WHILE | READ | WRITE | ATRIB
-    IF              -> se abrepar EXPR fechapar C-COMP H
-    H               -> lambda | senao C-COMP
-    WHILE           -> enquanto abrepar EXPR fechapar C-COMP
-    READ            -> leia abrepar LIST-ID fechapar pvirg
-    ATRIB           -> id atrib EXPR pvirg
-    WRITE           -> escreva abrepar LIST-W fechapar pvirg
-    LIST-W          -> ELEM-W L
-    L               -> lambda | virg LIST-W
-    ELEM-W          -> EXPR | cadeia
-    EXPR            -> SIMPLES P
-    P               -> lambda | oprel SIMPLES
-    SIMPLES         -> TERMO R
-    R               -> lambda | opad SIMPLES
-    TERMO           -> FAT S
-    S               -> lambda | opmul TERMO
-    FAT             -> id | cte | abrepar EXPR fechapar | verdadeiro | falso | opneg FAT
-
-    Tokens:
-    ID CTE CADEIA ATRIB OPREL OPAD OPMUL OPNEG PVIRG DPONTOS VIRG ABREPAR FECHARPAR ABRECH FECHACH FIMARQ ERROR
-    PROGRAMA VARIAVEIS INTEIRO REAL LOGICO CARACTER SE SENAO ENQUANTO LEIA ESCREVA FALSO VERDADEIRO
-
-    Comentarios:
-
-    Iniciam com // e vao ate o fim da linha
-    ou
-    Iniciam com /* e vao ate */
-
-"""
+##################################################################################################
+### Nome do aplicativo: Analisador Lexico	######################################################
+##################################################################################################
+##################################################################################################
+#####  Ambiente(s) de Desenvolvimento utilizado(s): PyCharm ######################################
+##################################################################################################
+##### Data de inicio da implementação do codigo: 23/10/2019 ######################################
+##### Data de verificação final do codigo: 07/11/2019 ############################################
+##################################################################################################
+##################################################################################################
+##### Nome: Pedro Daniel Camargos Soares 		Matricula: 0020640      ##########################
+##################################################################################################
+##### Nome: Lucas Gabriel de Almeida		 	Matricula: 0035333	##############################
+##################################################################################################
+##################################################################################################
 
 # Biblioteca usada para pegar o caminho dos arquivos .txt
 from os import path
@@ -340,19 +310,3 @@ if __name__ == "__main__":
         if token.const == TipoToken.FIMARQ[0]:  # Se for fim de arquivo, sai do laço
             break
     lex.fechaArquivo()  # Fecha o arquivo
-
-""" ANOTACOES
-
-    TESTAR SE O TOKEN DE ATRIBUICAO ESTA SENDO LIDO CORRETAMENTE
-
-
-nome = 
-
-    tabela_simbolos = None
-
-    if  == "-t":
-        print("Teste")
-        tabela_simbolos = open(, "w")
-        
-    tabela_simbolos.writelines(lex.reservadas)
-"""
